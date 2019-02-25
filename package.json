@@ -4,7 +4,7 @@
   "description": "from https://scotch.io/tutorials/google-cloud-platform-i-deploy-a-docker-app-to-google-container-engine-with-kubernetes#toc-prerequisites",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --exit",
     "start": "node index.js"
   },
   "author": "",
