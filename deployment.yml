@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: scotch-20190225-dep
+  labels:
+    #Project ID
+    app: scotch-20190225
+spec:
+  #Run two instances of our application
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: scotch-20190225
+    spec:
+      #Container details
+      containers:
+        - name: node-app
+          image: gcr.io/scotch-20190225/node-app:0.0.1
+          imagePullPolicy: Always
+          #Ports to expose
+          ports:
+          - containerPort: 8000

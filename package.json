@@ -1,0 +1,19 @@
+{
+  "name": "scotch",
+  "version": "1.0.0",
+  "description": "from https://scotch.io/tutorials/google-cloud-platform-i-deploy-a-docker-app-to-google-container-engine-with-kubernetes#toc-prerequisites",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "mocha": "^6.0.1",
+    "supertest": "^3.4.2"
+  }
+}
