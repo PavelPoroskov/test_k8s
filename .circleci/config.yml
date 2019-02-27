@@ -64,7 +64,7 @@ jobs:
             gcloud config set project $PROJECT_ID
             gcloud --quiet config set container/cluster $CLUSTER_NAME
             gcloud config set compute/region $COMPUTE_REGION
-            gcloud --quiet container clusters get-credentials $CLUSTER_NAME
+            gcloud --quiet container clusters get-credentials $CLUSTER_NAME --region $COMPUTE_REGION
             service docker start
             docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
             gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
