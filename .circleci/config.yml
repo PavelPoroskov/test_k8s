@@ -101,14 +101,20 @@ jobs:
             gcloud config set compute/region $COMPUTE_REGION
             gcloud --quiet container clusters get-credentials $CLUSTER_NAME --region $COMPUTE_REGION
 
+      - run:
           name: Deploy to Google Cloud 2
           command: |
-            service docker start
-            docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
+            sudo service docker start
+            sudo docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
 
+      - run:
           name: Deploy to Google Cloud 3
           command: |
             gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
+            
+      - run:
+          name: Deploy to Google Cloud 4
+          command: |
             kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
 
 workflows:
