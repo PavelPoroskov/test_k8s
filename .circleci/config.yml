@@ -56,6 +56,12 @@ jobs:
       #- run: gcloud --quiet components update --version 236.0.0
 
       - run:
+          name: Install Google Cloud-SDK 0
+          command: |
+            sudo apt-get update
+            sudo apt-get -y install lsb-release
+
+      - run:
           name: Install Google Cloud-SDK 1
           command: |
             echo 'export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"' >> $BASH_ENV
