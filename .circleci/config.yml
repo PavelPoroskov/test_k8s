@@ -35,3 +35,58 @@ jobs:
 
       # run tests!
       - run: yarn test
+
+  deploy:
+    docker:
+      - image: circleci/node:7.10
+        environment:
+          PROJECT_ID: scotch-20190225
+          CLUSTER_NAME: scotch-20190225-cluster-1
+          COMPUTE_ZONE: europe-north1-c
+          COMPUTE_REGION: europe-north1
+          #As specified in Deployment.yml
+          DEPLOYMENT_NAME: scotch-20190225-dep
+          CONTAINER_NAME: node-app
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run: sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 236.0.0
+#      -run: sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 120.0.0 kubectl
+
+      - run: 
+          name: Deploy to Google Cloud 
+          command: |
+            echo $SERVICE_KEY > key.txt
+          # Decode the Service Account
+            base64 -i key.txt -d > ${HOME}/gcloud-service-key.json
+          # Authenticate CircleCI with the service account file
+            sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account ${ACCOUNT_ID} --key-file ${HOME}/gcloud-service-key.json
+          # Set the default project
+            sudo /opt/google-cloud-sdk/bin/gcloud config set project $PROJECT_ID
+          # Set the default container
+            sudo /opt/google-cloud-sdk/bin/gcloud --quiet config set container/cluster $CLUSTER_NAME
+          # Set the compute zone
+          #- sudo /opt/google-cloud-sdk/bin/gcloud config set compute/zone $COMPUTE_ZONE
+            sudo /opt/google-cloud-sdk/bin/gcloud config set compute/region $COMPUTE_REGION
+          # Get the cluster credentials.
+            sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME
+          # Start good old Docker
+            sudo service docker start
+          # Build a docker image and use the Github commit hash ($CIRCLE_SHA1) as the tag
+            docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
+          # Push the Image to the GCP Container Registry
+            sudo /opt/google-cloud-sdk/bin/gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
+          # Update the default image for the deployment
+            sudo /opt/google-cloud-sdk/bin/kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
