@@ -38,7 +38,7 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/node:lts
+      - image: ubuntu:latest
         environment:
           PROJECT_ID: scotch-20190225
           CLUSTER_NAME: scotch-20190225-cluster-1
