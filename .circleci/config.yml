@@ -80,15 +80,19 @@ jobs:
             sudo apt-get update
             sudo apt-get -y install google-cloud-sdk kubectl
 
-      # - run:
-      #     name: Install Docker 
-      #     command: |
-      #       apt-get update
-      #       apt-get -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
-      #       curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-      #       sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-      #       apt-get update 
-      #       apt-get -y install docker-ce docker-ce-cli
+      - run:
+          name: Install Docker 
+          command: |
+            apt-get update
+            apt-get -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+
+      - run:
+          name: Install Docker 2
+          command: |
+            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+            apt-get update 
+            apt-get -y install docker-ce docker-ce-cli
 
       - run:
           name: Deploy to Google Cloud 
@@ -104,7 +108,7 @@ jobs:
       - run:
           name: Deploy to Google Cloud 2
           command: |
-            sudo systemctl start docker
+            sudo service docker start
             sudo docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
 
       - run:
