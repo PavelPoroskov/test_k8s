@@ -54,7 +54,7 @@ jobs:
       - checkout
 
       #- run: gcloud --quiet components update --version 236.0.0
-      - run: sudo apt-get install docker-ce docker-ce-cli
+      - run: apt-get install docker-ce docker-ce-cli
 
       - run:
           name: Deploy to Google Cloud 
