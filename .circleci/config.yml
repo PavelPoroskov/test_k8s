@@ -53,7 +53,7 @@ jobs:
     steps:
       - checkout
 
-      - run: gcloud --quiet components update --version 236.0.0
+      #- run: gcloud --quiet components update --version 236.0.0
 
       - run:
           name: Deploy to Google Cloud 
