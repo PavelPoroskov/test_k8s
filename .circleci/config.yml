@@ -7,14 +7,14 @@ version: 2
 executors:
   my-executor:
     machine: true
-      environment:
-        PROJECT_ID: scotch-20190225
-        CLUSTER_NAME: scotch-20190225-cluster-1
-        COMPUTE_ZONE: europe-north1-c
-        COMPUTE_REGION: europe-north1
-        #As specified in Deployment.yml
-        DEPLOYMENT_NAME: scotch-20190225-dep
-        CONTAINER_NAME: node-app
+    environment:
+      PROJECT_ID: scotch-20190225
+      CLUSTER_NAME: scotch-20190225-cluster-1
+      COMPUTE_ZONE: europe-north1-c
+      COMPUTE_REGION: europe-north1
+      #As specified in Deployment.yml
+      DEPLOYMENT_NAME: scotch-20190225-dep
+      CONTAINER_NAME: node-app
 
 jobs:
   testing:
