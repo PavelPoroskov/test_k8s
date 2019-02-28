@@ -8,7 +8,8 @@ executors:
   my-executor:
     machine: 
       enabled: true
-      image: circleci/classic:201808-01
+      # image: circleci/classic:201808-01
+      image: ubuntu:latest
     environment:
       PROJECT_ID: scotch-20190225
       CLUSTER_NAME: scotch-20190225-cluster-1
@@ -26,7 +27,8 @@ jobs:
 
     steps:
       - run: |
-          sudo apt-get update && sudo apt-get -y apt-transport-https apt-utils curl lsb-release gnupg-agent
+          sudo apt-get update
+          apt-get -y install apt-utils apt-transport-https ca-certificates curl gnupg-agent software-properties-common
       - run: |
           curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
           export NVM_DIR="$HOME/.nvm"
@@ -47,7 +49,12 @@ jobs:
           curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
           sudo apt-get update
           sudo apt-get -y install google-cloud-sdk kubectl
-          
+      - run: |
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          sudo apt-get update 
+          sudo apt-get -y install docker-ce docker-ce-cli containerd.io
+          service docker start
     # sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 120.0.0 kubectl
 
   testing:
@@ -65,7 +72,7 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - run: docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
+      - run: sudo docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
 
   deploy:
     executor: my-executor
