@@ -3,33 +3,34 @@ executors:
   executor-nodejs:
     docker:
       - image: circleci/node:lts
-    environment:
-      PROJECT_ID: scotch-20190225
-      CLUSTER_NAME: scotch-20190225-cluster-1
-      COMPUTE_ZONE: europe-north1-c
-      COMPUTE_REGION: europe-north1
-      #As specified in Deployment.yml
-      DEPLOYMENT_NAME: scotch-20190225-dep
-      CONTAINER_NAME: node-app
 
   executor-cloud-sdk:
     docker:
       - image: google/cloud-sdk:latest
-    environment:
-      PROJECT_ID: scotch-20190225
-      CLUSTER_NAME: scotch-20190225-cluster-1
-      COMPUTE_ZONE: europe-north1-c
-      COMPUTE_REGION: europe-north1
-      #As specified in Deployment.yml
-      DEPLOYMENT_NAME: scotch-20190225-dep
-      CONTAINER_NAME: node-app
 
 jobs:
+  variables:
+    executor: executor-nodejs
+    working_directory: ~/repo
+    steps:
+      - run: |
+          mkdir variables
+          export PROJECT_ID="scotch-20190225"
+          echo 'export PROJECT_ID="${PROJECT_ID}"' >> variables/common-env-vars
+          echo 'export CLUSTER_NAME="scotch-20190225-cluster-1"' >> variables/common-env-vars
+          echo 'export COMPUTE_ZONE="europe-north1-c"' >> variables/common-env-vars
+          echo 'export COMPUTE_REGION="europe-north1"' >> variables/common-env-vars
+          echo 'export DEPLOYMENT_NAME="scotch-20190225-dep"' >> variables/common-env-vars
+          echo 'export CONTAINER_NAME="node-app"' >> variables/common-env-vars
+          echo 'export FULL_IMAGE_NAME="gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1"' >> variables/common-env-vars
+      - persist_to_workspace:
+          root: .
+          paths:
+            - variables       
+
   test:
     executor: executor-nodejs
-
     working_directory: ~/repo
-
     steps:
       - checkout
 
@@ -51,21 +52,19 @@ jobs:
 
   build:
     executor: executor-nodejs
-
     working_directory: ~/repo
 
     steps:
       - checkout
+      - attach_workspace:
+          at: workspace
+      - run: cat workspace/variables/common-env-vars >> $BASH_ENV
+
       - setup_remote_docker
       - run: |
-          echo 'export FULL_IMAGE_NAME="gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1"' >> $BASH_ENV
-          export FULL_IMAGE_NAME="gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1"
           docker build -t $FULL_IMAGE_NAME .
-      - run:
-          name: Save image to an archive
-          command: |
-            mkdir docker-image
-            docker save -o docker-image/image.tar $FULL_IMAGE_NAME
+          mkdir docker-image
+          docker save -o docker-image/image.tar $FULL_IMAGE_NAME
       - persist_to_workspace:
           root: .
           paths:
@@ -76,12 +75,11 @@ jobs:
     # working_directory: ~/repo
     steps:
       - checkout
-      - setup_remote_docker
       - attach_workspace:
           at: workspace
-      # - run: |
-      #     echo 'export FULL_IMAGE_NAME="gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1"' >> $BASH_ENV
+      - run: cat workspace/variables/common-env-vars >> $BASH_ENV
 
+      - setup_remote_docker
       - run: |
           echo $SERVICE_KEY > key.txt
           base64 -i key.txt -d > ${HOME}/gcloud-service-key.json
@@ -94,10 +92,8 @@ jobs:
       - run:
           name: Load image
           command: |
-            source $BASH_ENV
             docker load --input workspace/docker-image/image.tar
             gcloud docker -- push $FULL_IMAGE_NAME
-            # gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
 
       # - run:
       #     name: Deploy to Google Cloud
@@ -109,7 +105,10 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - test
+      - variables
+      - test:
+          requires:
+            - variables
       - build:
           requires:
             - test
