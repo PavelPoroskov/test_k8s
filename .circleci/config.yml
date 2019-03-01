@@ -62,7 +62,7 @@ jobs:
 
   deploy:  
     docker:
-      - image: google/cloud-sdk
+      - image: google/cloud-sdk:latest
         environment:
           PROJECT_ID: scotch-20190225
           CLUSTER_NAME: scotch-20190225-cluster-1
@@ -92,6 +92,7 @@ jobs:
           name: Load image
           command: |
             docker load --input workspace/docker-image/image.tar
+            gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
 
       - run:
           name: Deploy to Google Cloud 4
