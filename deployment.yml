@@ -21,3 +21,12 @@ spec:
           #Ports to expose
           ports:
           - containerPort: 8000
+          env:
+          # Name of the environment variable as will be in the Pod
+            - name: IG_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                    # Name of the secret
+                    name: scotch-20190225-secret
+                    # key of the value stored in the secret
+                    key: access_token          
