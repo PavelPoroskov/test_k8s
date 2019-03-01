@@ -50,7 +50,7 @@ workflows:
   build-deploy:
     jobs:
       - test:
-      - dependecies
+      - dependecies:
           requires:
             - test
       - deployment:
