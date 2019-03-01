@@ -11,7 +11,7 @@ executors:
       #As specified in Deployment.yml
       DEPLOYMENT_NAME: scotch-20190225-dep
       CONTAINER_NAME: node-app
-      
+
   executor-cloud-sdk:
     docker:
       - image: google/cloud-sdk:latest
@@ -94,6 +94,7 @@ jobs:
       - run:
           name: Load image
           command: |
+            source $BASH_ENV
             docker load --input workspace/docker-image/image.tar
             gcloud docker -- push $FULL_IMAGE_NAME
             # gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
