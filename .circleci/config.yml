@@ -45,7 +45,9 @@ jobs:
 
     steps:
       - checkout
-      - run: docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
+      - run: |
+          service docker start
+          docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
             
 
 workflows:
