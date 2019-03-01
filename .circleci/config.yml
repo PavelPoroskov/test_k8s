@@ -47,8 +47,55 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |
-          docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
+          echo 'export FULL_IMAGE_NAME="gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1"' >> $BASH_ENV
+          docker build -t $FULL_IMAGE_NAME .
+      - run:
+          name: Save image to an archive
+          command: |
+            mkdir docker-image
+            docker save -o docker-image/image.tar $FULL_IMAGE_NAME
+      - persist_to_workspace:
+          root: .
+          paths:
+            - docker-image      
+
+  deploy:  
+    docker:
+      - image: google/cloud-sdk
+        environment:
+          PROJECT_ID: scotch-20190225
+          CLUSTER_NAME: scotch-20190225-cluster-1
+          COMPUTE_ZONE: europe-north1-c
+          COMPUTE_REGION: europe-north1
+          #As specified in Deployment.yml
+          DEPLOYMENT_NAME: scotch-20190225-dep
+          CONTAINER_NAME: node-app
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: workspace
+      - run: |
+          echo 'export FULL_IMAGE_NAME="gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1"' >> $BASH_ENV
+
+      - run: |
+          echo $SERVICE_KEY > key.txt
+          base64 -i key.txt -d > ${HOME}/gcloud-service-key.json
+          gcloud auth activate-service-account ${ACCOUNT_ID} --key-file ${HOME}/gcloud-service-key.json
+          gcloud config set project $PROJECT_ID
+          gcloud --quiet config set container/cluster $CLUSTER_NAME
+          gcloud config set compute/region $COMPUTE_REGION
+          gcloud --quiet container clusters get-credentials $CLUSTER_NAME --region $COMPUTE_REGION
+
+      - run:
+          name: Load image
+          command: |
+            docker load --input workspace/docker-image/image.tar
             
+      - run:
+          name: Deploy to Google Cloud 4
+          command: |
+            kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
 
 workflows:
   version: 2
@@ -58,3 +105,6 @@ workflows:
       - build:
           requires:
             - test
+      - deploy:
+          requires:
+            - build            
