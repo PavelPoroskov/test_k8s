@@ -7,7 +7,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/foo', (req, res) => {
-  res.status(200).json('welcome to foo. Test deploy 10:41');
+  res.status(200).json('welcome to foo. Test deploy 03:00 01.03.2019');
 });
 
 app.get('/bar', (req, res) => {

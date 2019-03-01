@@ -1,9 +1,20 @@
 version: 2.1
 executors:
-  my-executor:
+  executor-nodejs:
     docker:
-      # specify the version you desire here
       - image: circleci/node:lts
+    environment:
+      PROJECT_ID: scotch-20190225
+      CLUSTER_NAME: scotch-20190225-cluster-1
+      COMPUTE_ZONE: europe-north1-c
+      COMPUTE_REGION: europe-north1
+      #As specified in Deployment.yml
+      DEPLOYMENT_NAME: scotch-20190225-dep
+      CONTAINER_NAME: node-app
+      
+  executor-cloud-sdk:
+    docker:
+      - image: google/cloud-sdk:latest
     environment:
       PROJECT_ID: scotch-20190225
       CLUSTER_NAME: scotch-20190225-cluster-1
@@ -15,7 +26,7 @@ executors:
 
 jobs:
   test:
-    executor: my-executor
+    executor: executor-nodejs
 
     working_directory: ~/repo
 
@@ -39,7 +50,7 @@ jobs:
       - run: yarn test
 
   build:
-    executor: my-executor
+    executor: executor-nodejs
 
     working_directory: ~/repo
 
@@ -61,23 +72,15 @@ jobs:
             - docker-image      
 
   deploy:  
-    docker:
-      - image: google/cloud-sdk:latest
-        environment:
-          PROJECT_ID: scotch-20190225
-          CLUSTER_NAME: scotch-20190225-cluster-1
-          COMPUTE_ZONE: europe-north1-c
-          COMPUTE_REGION: europe-north1
-          #As specified in Deployment.yml
-          DEPLOYMENT_NAME: scotch-20190225-dep
-          CONTAINER_NAME: node-app
+    executor: executor-cloud-sdk
+    # working_directory: ~/repo
     steps:
       - checkout
       - setup_remote_docker
       - attach_workspace:
           at: workspace
-      - run: |
-          echo 'export FULL_IMAGE_NAME="gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1"' >> $BASH_ENV
+      # - run: |
+      #     echo 'export FULL_IMAGE_NAME="gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1"' >> $BASH_ENV
 
       - run: |
           echo $SERVICE_KEY > key.txt
@@ -92,12 +95,14 @@ jobs:
           name: Load image
           command: |
             docker load --input workspace/docker-image/image.tar
-            gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
+            gcloud docker -- push $FULL_IMAGE_NAME
+            # gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
 
-      - run:
-          name: Deploy to Google Cloud 4
-          command: |
-            kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
+      # - run:
+      #     name: Deploy to Google Cloud
+      #     command: |
+      #       kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=$FULL_IMAGE_NAME
+      #       # kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
 
 workflows:
   version: 2
