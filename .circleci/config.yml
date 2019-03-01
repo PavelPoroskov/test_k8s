@@ -15,8 +15,8 @@ jobs:
     steps:
       - run: |
           mkdir variables
-          export PROJECT_ID="scotch-20190225"
-          echo 'export PROJECT_ID="${PROJECT_ID}"' >> variables/common-env-vars
+          # export PROJECT_ID="scotch-20190225"
+          echo 'export PROJECT_ID="scotch-20190225"' >> variables/common-env-vars
           echo 'export CLUSTER_NAME="scotch-20190225-cluster-1"' >> variables/common-env-vars
           echo 'export COMPUTE_ZONE="europe-north1-c"' >> variables/common-env-vars
           echo 'export COMPUTE_REGION="europe-north1"' >> variables/common-env-vars
