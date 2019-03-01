@@ -47,6 +47,7 @@ jobs:
           - sudo /opt/google-cloud-sdk/bin/kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
 
 workflows:
+  version: 2
   build-deploy:
     jobs:
       - test:
