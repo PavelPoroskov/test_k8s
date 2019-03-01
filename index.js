@@ -3,7 +3,7 @@ const app = require('express')();
 const port = process.env.PORT || 8000;
 
 app.get('/', (req, res) => {
-  res.status(200).json('welcome to root');
+  res.status(200).json('welcome to root. Test deploy 01.03');
 });
 
 app.get('/foo', (req, res) => {
