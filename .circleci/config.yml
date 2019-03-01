@@ -45,8 +45,8 @@ jobs:
 
     steps:
       - checkout
+      - setup_remote_docker
       - run: |
-          service docker start
           docker build -t gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1 .
             
 
