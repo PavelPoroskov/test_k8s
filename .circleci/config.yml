@@ -95,11 +95,10 @@ jobs:
             docker load --input workspace/docker-image/image.tar
             gcloud docker -- push $FULL_IMAGE_NAME
 
-      # - run:
-      #     name: Deploy to Google Cloud
-      #     command: |
-      #       kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=$FULL_IMAGE_NAME
-      #       # kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
+      - run:
+          name: Deploy to Google Cloud
+          command: |
+            kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=$FULL_IMAGE_NAME
 
 workflows:
   version: 2
