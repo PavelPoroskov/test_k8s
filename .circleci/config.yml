@@ -45,3 +45,14 @@ jobs:
           - sudo /opt/google-cloud-sdk/bin/gcloud docker -- push gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
           # Update the default image for the deployment
           - sudo /opt/google-cloud-sdk/bin/kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=gcr.io/${PROJECT_ID}/node-app:$CIRCLE_SHA1
+
+workflows:
+  build-deploy:
+    jobs:
+      - test:
+      - dependecies
+          requires:
+            - test
+      - deployment:
+          requires:
+            - dependecies
